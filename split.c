@@ -4,22 +4,33 @@
 #include "split.h"
 
 char **string_split(const char *input, const char *sep, int *num_words) {
-    int capacity = 10; 
+    int capacity = 10;
     char **words = malloc(capacity * sizeof(char *));
     *num_words = 0;
     const char *current = input;
     size_t len;
     char *word;
+    int sep_len = strlen(sep);
+
+    
+    if (strncmp(current, sep, sep_len) == 0) {
+        words[(*num_words)++] = strdup("");
+        if (*num_words >= capacity) {
+            capacity *= 2;
+            words = realloc(words, capacity * sizeof(char *));
+        }
+        current += sep_len;
+    }
 
     while (*current) {
-        current += strspn(current, sep); 
+        current += strspn(current, sep);
         if (!*current) break;
 
-        len = strcspn(current, sep); 
+        len = strcspn(current, sep);
         if (len > 0) {
             word = malloc(len + 1);
             strncpy(word, current, len);
-            word[len] = '\0'; 
+            word[len] = '\0';
 
             if (*num_words >= capacity) {
                 capacity *= 2;
@@ -31,7 +42,16 @@ char **string_split(const char *input, const char *sep, int *num_words) {
         current += len;
     }
 
-    if (*num_words == 0) { 
+    if (*(current - sep_len) == *sep) {
+        if (*num_words == capacity) {
+            capacity += 1;
+            words = realloc(words, capacity * sizeof(char *));
+        }
+        words[(*num_words)++] = strdup("");
+    }
+
+    if (*num_words == 0) {
+        
         free(words);
         return NULL;
     }
